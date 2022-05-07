@@ -7,3 +7,6 @@
 [submodule "code/include/liburing"]
 	path = code/include/liburing
 	url = https://github.com/axboe/liburing
+[submodule "scripts/FlameGraph"]
+	path = scripts/FlameGraph
+	url = https://github.com/brendangregg/FlameGraph

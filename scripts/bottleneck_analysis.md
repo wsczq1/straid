@@ -1,6 +1,12 @@
 # Bottleneck analysis
 In this experiment, we evaluate the write performance of Linux MD RAID 5 at different threads number and analyze the write latency breakdown by Linux-perf tool.
 
+## Install submodules
+In the sections of motivation and evaluation in our paper, we used some tools for analysis and comparison, so we introduced them as submodules. To execute these parts of the code, please install the submodules.
+```
+git submodule update --init --recursive
+```
+
 ## Tools and Dependences
 In the sections of motivation in our paper, we used some tools for analysis and comparison.  
 

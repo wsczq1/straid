@@ -31,6 +31,7 @@ using namespace std;
 #define LOOP (2) // workload loop num
 #define USER_SPACE_LEN (50 * GB)
 // #define IO_SIZE (64 * KB) 
+// #define IO_SIZE (PARTSIZE)
 #define IO_SIZE (FULLSIZE)
 
 #define STRA_SPACE_LEN (50 * GB) // RAID Space footprint in a SSD
@@ -43,8 +44,8 @@ using namespace std;
 #define QUE_MAXLEN (MB)
 #define QUE_BLOCK BLK_SIZE
 
-#define RING_QD (128)
-#define RING_FLAG (IORING_SETUP_SQPOLL | IORING_SETUP_IOPOLL)
+#define RING_QD (32)
+#define RING_FLAG (IORING_SETUP_IOPOLL)
 
 typedef unsigned char u8;
 #define MMAX 64

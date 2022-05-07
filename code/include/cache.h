@@ -34,9 +34,9 @@ extern atomic_uint64_t cache_count;
 struct PCache_Item
 {
     uint64_t stripe_id;
-    vector<char *> parity_ptrs; 
-    uint64_t start_devoff;      
-    uint64_t length;            
+    vector<char *> parity_ptrs;
+    uint64_t start_devoff;
+    uint64_t length;
 
     PCache_Item(uint64_t stripe_id, vector<char *> parity_ptrs, uint64_t start_devoff, uint64_t length)
         : stripe_id(stripe_id), parity_ptrs(parity_ptrs), start_devoff(start_devoff), length(length){};
@@ -92,40 +92,6 @@ public:
         return ret;
     }
 
-    // bool insert(uint64_t dev_off, vector<char *> paritybufs)
-    // {
-    //     atomic_uint64_t off(dev_off);
-    //     bool qret = Off_lru.enqueue(off);
-    //     assert(qret);
-
-    //     int num_paritys = paritybufs.size();
-    //     assert(num_paritys == PARITYCHUNK_NUM);
-
-    //     if (Cache_Root.size() >= MAX_stripes)
-    //     {
-    //         uint64_t lru_ret;
-    //         auto qret = Off_lru.dequeue(&lru_ret);
-    //         assert(qret == true);
-    //         cacheAccessor acc_e;
-    //         if (Cache_Root.find(acc_e, lru_ret) == true)
-    //         {
-    //             // cout << "cache full, insert: " << dev_off << ", del: " << acc_e->first << endl;
-    //             vector<char *> v_delbuf = acc_e->second;
-    //             assert(v_delbuf.size() == PARITYCHUNK_NUM);
-    //             Cache_Root.erase(acc_e);
-    //         }
-    //         else
-    //         {
-    //             // cout << "ERROR" << endl;
-    //         }
-    //     }
-
-    //     cacheAccessor acc;
-    //     Cache_Root.insert(acc, make_pair(dev_off, paritybufs));
-
-    //     return true;
-    // }
-
     bool insert_cpy(uint64_t dev_off, vector<char *> paritybufs, uint64_t buflen)
     {
         atomic_uint64_t off(dev_off);
@@ -135,16 +101,10 @@ public:
         int num_paritys = paritybufs.size();
         assert(num_paritys == PARITYCHUNK_NUM);
 
-        // cout << "Pcache inserting, devoff=" << dev_off << "cache_count: " << cache_count.load()  << endl;
-        // cache_count++;
-
         vector<char *> temp;
         for (int i = 0; i < num_paritys; i++)
         {
             char *buf;
-            // int ret = posix_memalign((void **)&buf, SECTOR_SIZE, buflen);
-            // assert(ret == 0);
-            // memcpy(buf, paritybufs.at(i), buflen);
             temp.emplace_back(buf);
         }
 
@@ -158,16 +118,12 @@ public:
             CDSmap_type::guarded_ptr gp(Cache_Root.get(lru_ret));
             if (gp)
             {
-                // cout << "found " << gp->first << endl;
-                // cout << "cache full, insert: " << dev_off << ", del: " << gp->first << endl;
-                // cout << "cache full, Cache_Root size: " << Cache_Root.size() << ", Off_lru size: " << Off_lru.getSize() << endl;
                 vector<char *> v_delbuf = gp->second;
                 assert(v_delbuf.size() == PARITYCHUNK_NUM);
                 auto ret = Cache_Root.erase(gp->first);
             }
             else
             {
-                // cout << "gp not found: " << lru_ret << endl;
                 CDSmap_type::const_iterator itr = Cache_Root.cbegin();
                 auto ret = Cache_Root.erase(itr->first);
             }
@@ -182,35 +138,6 @@ public:
         Cache_Root.clear();
         return true;
     }
-
-    // void run()
-    // {
-    //     while (1)
-    //     {
-    //         if (Cache_Root.size() > PCACHE_SIZE)
-    //         {
-    //             uint64_t erased = 0;
-    //             // cout << dec << "erasing start, size=" << Cache_Root.size() << " " << erased << endl;
-    //             for (size_t i = 0; i < Cache_Root.size(); i++)
-    //             {
-    //                 cacheAccessor acc_e;
-    //                 uint64_t lru_ret;
-    //                 auto qret = Off_lru.dequeue(&lru_ret);
-    //                 if (qret && Cache_Root.find(acc_e, lru_ret) == true)
-    //                 {
-    //                     // cout << "cache full, insert: " << dev_off << ", del: " << acc_e->first << endl;
-    //                     vector<char *> v_delbuf = acc_e->second;
-    //                     assert(v_delbuf.size() == PARITYCHUNK_NUM);
-    //                     auto ret = Cache_Root.erase(acc_e);
-    //                     assert(ret == true);
-    //                     erased++;
-    //                 }
-    //             }
-    //             // cout << dec << "erasing end, size=" << Cache_Root.size() << " " << erased << endl;
-    //         }
-    //         sleep(1);
-    //     }
-    // }
 };
 
 #endif

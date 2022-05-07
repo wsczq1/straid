@@ -14,9 +14,7 @@
 #include <string.h>
 #include <liburing.h>
 
-// #include "threadpool11/threadpool11.hpp"
 #include "concurrentqueue.h"
-
 #include "metadata.h"
 #include "logfiles.h"
 #include "queues.h"
@@ -32,27 +30,24 @@ public:
     MetaMod *GloMeta;
 
 public:
-    const static int Max_ECthreads = NUM_WORKERS; 
-    atomic_bool ecthreadbuf_flag[Max_ECthreads];  
+    const static int Max_ECthreads = NUM_WORKERS;
+    atomic_bool ecthreadbuf_flag[Max_ECthreads];
 
-    
-    vector<ecEncoder *> v_ecEncoder;     
-    vector<vector<char *>> v_olddatabuf; 
-    vector<vector<char *>> v_newdatabuf; 
-    vector<vector<char *>> v_temp_pbuf;  
-
+    vector<ecEncoder *> v_ecEncoder;
+    vector<vector<char *>> v_olddatabuf;
+    vector<vector<char *>> v_newdatabuf;
+    vector<vector<char *>> v_temp_pbuf;
     vector<vector<char *>> v_endatabuf;
     vector<vector<char *>> v_enparitybuf;
 
-    int valid;           
-    int check;           
-    uint64_t chunk_size; 
+    int valid;
+    int check;
+    uint64_t chunk_size;
 
 public:
     V_DevFiles *v_stdfiles;
 
 public:
-    
     thread encode_t;
 
 public:
@@ -60,8 +55,8 @@ public:
     char *bitmap_buf;
 
 public:
-    io_uring stdring[NUM_WORKERS];             
-    atomic_uint64_t ring_pending[NUM_WORKERS]; 
+    io_uring stdring[NUM_WORKERS];
+    atomic_uint64_t ring_pending[NUM_WORKERS];
 
 public:
     SEncodeMod(int valid_in, int check_in, int chunksize, V_DevFiles *v_devfiles_in, MetaMod *Meta)
@@ -82,7 +77,7 @@ public:
             for (int n = 0; n < valid; n++)
             {
                 char *ptr = NULL;
-                int ret = posix_memalign((void **)&ptr, ALIGN_SIZE, SCHUNK_SIZE); 
+                int ret = posix_memalign((void **)&ptr, ALIGN_SIZE, SCHUNK_SIZE);
                 memset(ptr, 0x1a, SCHUNK_SIZE);
                 data_buf.emplace_back(ptr);
             }
@@ -92,7 +87,7 @@ public:
             for (int n = 0; n < check; n++)
             {
                 char *ptr = NULL;
-                int ret = posix_memalign((void **)&ptr, ALIGN_SIZE, SCHUNK_SIZE); 
+                int ret = posix_memalign((void **)&ptr, ALIGN_SIZE, SCHUNK_SIZE);
                 memset(ptr, 0x1b, SCHUNK_SIZE);
                 parity_buf.emplace_back(ptr);
             }
@@ -102,7 +97,7 @@ public:
             for (int n = 0; n < BufLen; n++)
             {
                 char *ptr = NULL;
-                int ret = posix_memalign((void **)&ptr, ALIGN_SIZE, SCHUNK_SIZE); 
+                int ret = posix_memalign((void **)&ptr, ALIGN_SIZE, SCHUNK_SIZE);
                 memset(ptr, 0x00, SCHUNK_SIZE);
                 temp_buf.emplace_back(ptr);
             }
@@ -112,7 +107,7 @@ public:
             for (int n = 0; n < BufLen; n++)
             {
                 char *ptr = NULL;
-                int ret = posix_memalign((void **)&ptr, ALIGN_SIZE, SCHUNK_SIZE); 
+                int ret = posix_memalign((void **)&ptr, ALIGN_SIZE, SCHUNK_SIZE);
                 memset(ptr, 0x00, SCHUNK_SIZE);
                 olddata_buf.emplace_back(ptr);
             }
@@ -148,6 +143,5 @@ public:
     bool encode_fullstripe(int thread, vector<DIO_Info> v_dios);
     bool encode_partialstripe(int thread, vector<DIO_Info> v_dios);
 };
-
 
 #endif

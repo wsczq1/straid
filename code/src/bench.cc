@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
             outfile << band_results[i] << "\t";
         }
         cout << endl;
-        outfile << "\t\t";
+        outfile << "\t|\t";
 
         for (size_t i = 0; i < iops_results.size(); i++)
         {
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
             outfile << iops_results[i] << "\t";
         }
         cout << endl;
-        outfile << "\t\t";
+        outfile << "\t|\t";
 
         // Average latency
         for (size_t i = 0; i < 4; i++)
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
             outfile << latency_results[i].at(0) << "\t";
         }
         cout << endl;
-        outfile << "\t\t";
+        outfile << "\t|\t";
 
         // 50th latency
         for (size_t i = 0; i < 4; i++)
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
             outfile << latency_results[i].at(1) << "\t";
         }
         cout << endl;
-        outfile << "\t\t";
+        outfile << "\t|\t";
 
         // 90th latency
         for (size_t i = 0; i < 4; i++)
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
             outfile << latency_results[i].at(3) << "\t";
         }
         cout << endl;
-        outfile << "\t\t";
+        outfile << "\t|\t";
 
         // 99th latency
         for (size_t i = 0; i < 4; i++)
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
             outfile << latency_results[i].at(4) << "\t";
         }
         cout << endl;
-        outfile << "\t\t";
+        outfile << "\t|\t";
 
         // 999th latency
         for (size_t i = 0; i < 4; i++)
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
             outfile << latency_results[i].at(5) << "\t";
         }
         cout << endl;
-        outfile << "\t\t";
+        outfile << "\t|\t";
 
         outfile << endl;
         outfile.close();
@@ -268,7 +268,6 @@ void test_SeqWrite(int testid, StorageMod *storagemod, vector<char *> *workloadw
     }
     double timer = toc(9);
     auto ret = print_throughtput(DATASET_SIZE * LOOP, LOOP * DATASET_SIZE / G_IOSIZE, timer, "SEQ WRITE LOAD END");
-    printf("ALL write data: %lld, All read data: %lld\n", All_Write_Data.load() / MB, All_Read_Data.load() / MB);
     All_Write_Data.store(0);
     All_Read_Data.store(0);
 
@@ -315,7 +314,6 @@ void test_RandWrite(int testid, StorageMod *storagemod, vector<char *> *workload
     }
     double timer = toc(9);
     auto ret = print_throughtput(DATASET_SIZE * LOOP, LOOP * DATASET_SIZE / G_IOSIZE, timer, "RAND WRITE LOAD END");
-    printf("ALL write data: %lld, All read data: %lld\n", All_Write_Data.load() / MB, All_Read_Data.load() / MB);
     All_Write_Data.store(0);
     All_Read_Data.store(0);
 
@@ -365,7 +363,6 @@ void test_SeqRead(int testid, StorageMod *storagemod, vector<char *> *workloadr_
     }
     double timer = toc(9);
     auto ret = print_throughtput(DATASET_SIZE * LOOP, LOOP * DATASET_SIZE / iosize, timer, "SEQ READ LOAD END");
-    printf("ALL write data: %lld, All read data: %lld\n", All_Write_Data.load() / MB, All_Read_Data.load() / MB);
     All_Write_Data.store(0);
     All_Read_Data.store(0);
 
@@ -414,7 +411,6 @@ void test_RandRead(int testid, StorageMod *storagemod, vector<char *> *workloadr
     }
     double timer = toc(9);
     auto ret = print_throughtput(DATASET_SIZE * LOOP, LOOP * DATASET_SIZE / iosize, timer, "RAND READ LOAD END");
-    printf("ALL write data: %lld, All read data: %lld\n", All_Write_Data.load() / MB, All_Read_Data.load() / MB);
     All_Write_Data.store(0);
     All_Read_Data.store(0);
 

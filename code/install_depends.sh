@@ -9,3 +9,4 @@ sudo apt install yasm
 sudo apt install nasm
 sudo apt install libtool-bin
 sudo apt install libtbb-dev
+sudo apt install dstat

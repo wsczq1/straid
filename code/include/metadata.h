@@ -171,58 +171,57 @@ struct SShashtable
         tablehash.clear();
     }
 
-    // bool search_SST(uint64_t stripeid, SSTEntry *&entry)
-    // {
+    bool search_SST(uint64_t stripeid, SSTEntry *&entry)
+    {
 
-    //     if (tablehash.find(stripeid, entry))
-    //     {
-    //         return true;
-    //     }
-    //     else
-    //     {
-    //         return false;
-    //     }
-    // }
+        if (tablehash.find(stripeid, entry))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
-    // bool searchget_SST(uint64_t stripeid, uint64_t threadid, SSTEntry *&entry)
-    // {
-    //     bool handled = false;
-    //     if (tablehash.find(stripeid, entry))
-    //     {
-    //         assert(entry != NULL);
-    //         return true;
-    //     }
-    //     else
-    //     {
-    //         SSTEntry *entry = new SSTEntry(stripeid, threadid);
-    //         bool ret = tablehash.insert_or_assign(stripeid, entry);
-    //         assert(entry != NULL);
-    //         return false;
-    //     }
-    // }
+    bool searchget_SST(uint64_t stripeid, uint64_t threadid, SSTEntry *&entry)
+    {
+        bool handled = false;
+        if (tablehash.find(stripeid, entry))
+        {
+            assert(entry != NULL);
+            return true;
+        }
+        else
+        {
+            SSTEntry *entry = new SSTEntry(stripeid, threadid);
+            bool ret = tablehash.insert_or_assign(stripeid, entry);
+            assert(entry != NULL);
+            return false;
+        }
+    }
 
-    // bool delete_SST(uint64_t stripeid)
-    // {
-    //     SSTEntry *entry = NULL;
-    //     if (tablehash.find(stripeid, entry))
-    //     {
-    //         entry->SSTstripeid = INT32_MAX;
-    //         entry->SSTthreadid = INT16_MAX;
-    //         entry->is_frozen.store(true);
-    //         entry->stripe_lock.store(false);
+    bool delete_SST(uint64_t stripeid)
+    {
+        SSTEntry *entry = NULL;
+        if (tablehash.find(stripeid, entry))
+        {
+            entry->SSTstripeid = INT32_MAX;
+            entry->SSTthreadid = INT16_MAX;
+            entry->is_frozen.store(true);
+            entry->stripe_lock.store(false);
 
-    //         bool ret = tablehash.erase(stripeid);
-    //         assert(ret == true);
-    //         return true;
-    //     }
-    //     else
-    //     {
-    //         return false;
-    //     }
-    // }
+            bool ret = tablehash.erase(stripeid);
+            assert(ret == true);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 };
 
-// RAID Meta Module
 class StdRAID_Meta
 {
 public:
@@ -232,12 +231,12 @@ public:
     int chunk_size; // chunk size
 
     vector<StdStripe *> stripemeta;
-    V_DevFiles *v_stdfiles; // block storages
+    V_DevFiles *v_stdfiles; 
     vector<uint64_t> Disk_Start_offset;
     vector<uint64_t> Disk_Max_offset;
 
-    ParityCache cache_mod; // ParityCache
-    SSTable sstable_mod;   // SStable
+    ParityCache cache_mod; 
+    SSTable sstable_mod; 
 
 public:
     StdRAID_Meta(V_DevFiles *v_stdfiles)
@@ -368,11 +367,9 @@ public:
     };
 };
 
-// RAID system Meta Module
 class MetaMod
 {
 public:
-    // space information
     uint64_t User_base_offset;
     uint64_t User_max_offset;
 

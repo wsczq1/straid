@@ -50,7 +50,6 @@ vector<double> G_IOLAT[G_NUM_WORKERS];
 extern StorageMod *GloStor;
 bool Collector_endflag = false;
 
-
 struct TTest_Item
 {
     uint64_t all_data_written;
@@ -123,7 +122,7 @@ void worker_run(int thread_id,
         }
         G_IOCOUNT.fetch_add(1);
         double time = toc(10 + thread_id);
-        IO_LatArray[thread_id].emplace_back(time);        
+        IO_LatArray[thread_id].emplace_back(time);
     }
     return;
 }
@@ -249,6 +248,7 @@ int main(int argc, char *argv[])
         Cache_Miss.store(0);
 
         TTest_Item this_citem;
+        uint64_t asize = SSTRIPE_DATASIZE;
 
         printf("Run Trace %s\n", v_tfileset.at(traces).c_str());
         vector<bool> trace_iodir;
@@ -267,11 +267,10 @@ int main(int argc, char *argv[])
             str_split(line, lineSplit, "\t");
             uint64_t offset = atoll(lineSplit[1].c_str());
             uint64_t length = atoll(lineSplit[2].c_str());
-            offset = o_align(offset, SCHUNK_SIZE);
-            if (lineSplit[0] == "W" && length > SSTRIPE_DATASIZE)
+            ol_align(length, offset, BLK_SIZE);
+            if (lineSplit[0] == "W" && length > asize)
             {
-                offset = o_align(offset, SSTRIPE_DATASIZE);
-                length = l_align(length, SSTRIPE_DATASIZE);
+                ol_align(length, offset, asize);
             }
 
             if (length > 100 * MB)
@@ -319,20 +318,6 @@ int main(int argc, char *argv[])
 
         printf("Printing Results\n");
         outfile << v_tfileset.at(traces) << endl;
-
-        outfile << "All_Write_Data (MB)"
-                << "\t" << All_Write_Data.load() / 1024 / 1024 << endl;
-        outfile << "All_Read_Data (MB)"
-                << "\t" << All_Read_Data.load() / 1024 / 1024 << endl;
-
-        outfile << "cache hit"
-                << "\t" << Cache_Hit.load() << endl;
-        outfile << "cache miss"
-                << "\t" << Cache_Miss.load() << endl;
-        outfile << "cache hit rate"
-                << "\t" << (float)Cache_Hit.load() / (Cache_Hit.load() + Cache_Miss.load()) << endl;
-        outfile << "cache size"
-                << "\t" << metamod.StdRAID_meta->cache_mod.Cache_Root.size() << endl;
 
         outfile << "Band Persec: "
                 << endl;

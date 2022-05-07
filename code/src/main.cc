@@ -123,9 +123,6 @@ int main(int argc, char *argv[])
         }
         double timer = toc(9);
         print_throughtput(DATASET_SIZE * LOOP, LOOP * DATASET_SIZE / IO_SIZE, timer, "DISK WRITE LOAD END");
-        printf("ALL write data: %lld, All read data: %lld\n", All_Write_Data.load() / MB, All_Read_Data.load() / MB);
-        printf("Batch count: %ld, Block count: %ld\n", Batch_Count.load(), Block_Count.load());
-        printf("cache hit: %ld, cache miss: %ld\n", Cache_Hit.load(), Cache_Miss.load());
         All_Write_Data.store(0);
         All_Read_Data.store(0);
         Batch_Count.store(0);
@@ -175,7 +172,6 @@ int main(int argc, char *argv[])
         }
         double timer = toc(9);
         print_throughtput(DATASET_SIZE * LOOP, LOOP * DATASET_SIZE / iosize, timer, "SEQ READ LOAD END");
-        printf("ALL write data: %lld, All read data: %lld\n", All_Write_Data.load() / MB, All_Read_Data.load() / MB);
         All_Write_Data.store(0);
         All_Read_Data.store(0);
     }

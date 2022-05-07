@@ -43,6 +43,7 @@ int DropCaches(int drop); // drop CPU cache
 bool isBadPtr(void *p);
 uint64_t o_align(uint64_t offset, uint64_t align);
 uint64_t l_align(uint64_t length, uint64_t align);
+void ol_align(uint64_t &length, uint64_t &offset, uint64_t align);
 
 // io_uring
 void iouring_wprep(io_uring *ring, int fd, char *buf, uint64_t dev_off, uint64_t length);

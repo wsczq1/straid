@@ -27,7 +27,6 @@ bool StorageMod::Init_Raid(V_DevFiles *v_devfiles)
 
     thread tid[v_devfiles->size()];
 
-    
     for (size_t i = 0; i < v_devfiles->size(); i++)
     {
         int fd = v_devfiles->at(i)->file_fd;
@@ -100,7 +99,6 @@ void StorageMod::split_chunk(uint64_t offset, uint64_t length, vector<int> *chun
     {
         uint64_t this_chunk_eoff = stripe_soff + SCHUNK_SIZE * (logical_distance(s_chunkpos, i, NUM_DEVFILES) + 1);
         uint64_t devoff = user2dev(start_off, NULL, NULL);
-        // printf("start_off:%ld devoff:%ld\n", start_off, devoff);
         chunk_soff->emplace_back(devoff);
         if (remain_len > this_chunk_eoff - start_off)
         {
@@ -139,7 +137,6 @@ vector<DIO_Info> StorageMod::split_chunk2dio(UIO_Info uio)
 
     user2dev(offset, &start_chunkpos, &stripeid_s);
     user2dev(offset + length - 1, &end_chunkpos, &stripeid_e);
-    // cout << stripeid_s << " " << stripeid_e << " " << offset << " " << length << endl;
     if (stripeid_s != stripeid_e)
     {
         cout << "split_chunk2dio " << stripeid_s << " " << stripeid_e << " " << offset << " " << length << endl;
@@ -147,6 +144,7 @@ vector<DIO_Info> StorageMod::split_chunk2dio(UIO_Info uio)
 
     assert(stripeid_s == stripeid_e);
 
+    uint64_t start_buf = 0;
     uint64_t start_off = offset;
     uint64_t remain_len = length;
 
@@ -166,7 +164,7 @@ vector<DIO_Info> StorageMod::split_chunk2dio(UIO_Info uio)
         uint64_t dev_offset = user2dev(start_off, NULL, NULL);
         uint64_t this_chunk_eoff = stripe_soff + SCHUNK_SIZE * (logical_distance(s_chunkpos, i, NUM_DEVFILES) + 1);
 
-        buf = uio.buf + start_off;
+        buf = uio.buf + start_buf;
 
         // printf("start_off:%ld devoff:%ld\n", start_off, devoff);
 
@@ -192,6 +190,7 @@ vector<DIO_Info> StorageMod::split_chunk2dio(UIO_Info uio)
 
         remain_len = remain_len - (this_chunk_eoff - start_off);
         start_off = start_off + (this_chunk_eoff - start_off);
+        start_buf = start_buf + length;
     }
 
     return ret;
@@ -205,10 +204,8 @@ void StorageMod::split_stripe_aligned(UIO_Info *uio, vector<UIO_Info *> *uios_ou
     char *start_buf = uio->buf;
     uint64_t remain_len = uio->length;
 
-    // cout << "[split_stripe_aligned] " << start_off << " " << remain_len << endl;
-
-    int start_stripeid = 0; 
-    int end_stripeid = 0;   
+    int start_stripeid = 0;
+    int end_stripeid = 0;
     user2dev(uio->user_offset, NULL, &start_stripeid);
     user2dev(uio->user_offset + uio->length - 1, NULL, &end_stripeid);
 
@@ -357,10 +354,10 @@ void StorageMod::workers_run(int worker_id)
 {
     // cout << "RAID worker " << worker_id << " run" << endl;
 
-    cpu_set_t mask;                                           // CPU mask
-    cpu_set_t get;                                            
-    CPU_ZERO(&mask);                                          
-    CPU_SET(worker_id, &mask);                                
+    cpu_set_t mask; 
+    cpu_set_t get;
+    CPU_ZERO(&mask);
+    CPU_SET(worker_id, &mask);
     if (sched_setaffinity(0, sizeof(cpu_set_t), &mask) == -1) // set CPU affinity
     {
         printf("warning: could not set CPU affinity, continuing...\n");
@@ -377,8 +374,6 @@ void StorageMod::workers_run(int worker_id)
         {
         }
         uio.user_id = worker_id;
-
-        // cout << "IN tid: " << worker_id << " uoff: " << uio.user_offset / 1024 << " stripe: " << user2stripe(uio.user_offset) << endl;
 
         if (uio.is_write)
         {
@@ -404,11 +399,7 @@ void StorageMod::workers_run(int worker_id)
                     {
                         sse->SSTthreadid.store(worker_id);
                         sse->is_frozen.store(false);
-
-                        // cout << " begin tid: " << worker_id << " off= " << uio.user_offset << " time= " << get_nowtimeus() << " sse " << sse->SSTthreadid.load() << endl;
                         raid_write(uio);
-                        // cout << " end tid: " << worker_id << " off= " << uio.user_offset << " time= " << get_nowtimeus() << " sse " << sse->SSTthreadid.load() << endl;
-
                         sse->SSTthreadid.store(INT16_MAX);
                         sse->stripe_lock.store(false);
 
@@ -455,7 +446,8 @@ uint64_t StorageMod::raid_write_direct(UIO_Info uio)
 
     vector<UIO_Info *> v_suios;
     split_stripe_aligned(&uio, &v_suios);
-    // assert(v_suios.size() > 0);
+    assert(v_suios.size() > 0);
+
     for (size_t ck = 0; ck < v_suios.size(); ck++)
     {
         int stripeid = user2stripe(uio.user_offset);
@@ -473,11 +465,7 @@ uint64_t StorageMod::raid_write_direct(UIO_Info uio)
             {
                 sse->SSTthreadid.store(worker_id);
                 sse->is_frozen.store(false);
-
-                // cout << " begin tid: " << worker_id << " off= " << uio.user_offset << " time= " << get_nowtimeus() << " sse " << sse->SSTthreadid.load() << endl;
                 raid_write(*v_suios.at(ck));
-                // cout << " end tid: " << worker_id << " off= " << uio.user_offset << " time= " << get_nowtimeus() << " sse " << sse->SSTthreadid.load() << endl;
-
                 sse->SSTthreadid.store(INT16_MAX);
                 sse->stripe_lock.store(false);
 

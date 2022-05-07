@@ -21,7 +21,6 @@ extern atomic_bool proc_end_flag;
 extern atomic_uint64_t Batch_Count;
 extern atomic_uint64_t Cache_Hit;
 extern atomic_uint64_t Cache_Miss;
-
 StorageMod *GloStor;
 
 bool SEncodeMod::encode_fullstripe(int tid, vector<DIO_Info> v_dios)
@@ -35,24 +34,13 @@ bool SEncodeMod::encode_fullstripe(int tid, vector<DIO_Info> v_dios)
     vector<char *> v_databuf;
     for (size_t i = 0; i < DATACHUNK_NUM; i++)
     {
-        v_databuf.emplace_back(v_dios.at(i).buf);
+        memcpy(v_endatabuf[tid].at(i), v_dios.at(i).buf, v_dios.at(i).length);
     }
 
     SSTEntry *ssentry;
     bool sret = SST->search_SST(stripeid, ssentry);
     assert(sret == true);
     ssentry->is_frozen.store(true);
-
-    // vector<DIO_Info> dios;
-    // while (batchque_len->load() > 0)
-    // {
-    //     DIO_Info dio;
-    //     while (batchque->try_dequeue(dio) != true)
-    //     {
-    //     }
-    //     batchque_len->fetch_sub(1);
-    //     dios.emplace_back(dio);
-    // }
 
     ecEncoder *ecencoder = v_ecEncoder[tid];
     ecencoder->do_full_encode(v_endatabuf[tid], v_enparitybuf[tid]);
@@ -185,16 +173,35 @@ bool SEncodeMod::encode_partialstripe(int tid, vector<DIO_Info> v_dios)
 
     if (batch_iolen > ((SCHUNK_SIZE * DATACHUNK_NUM - vios_len) >> 1))
     {
-        //! 加一个RCW读取剩余块的算法
-        // for (size_t i = 0; i < bat_dios.size(); i++)
-        // {
-        //     char *readbuf = v_endatabuf.at(tid).at(i + bat_dios.size());
-        //     uint64_t roffset = bat_dios[i].dev_offset;
-        //     uint64_t rlen = bat_dios[i].length;
-        //     DevFile *destdev = v_stdfiles->at(bat_dios[i].dev_id);
-        //     int fd = destdev->file_fd;
-        //     iouring_rprep(&stdring[tid], fd, readbuf, roffset, rlen);
-        // }
+        vector<DIO_Info> re_dios;
+        vector<int> index;
+        for (size_t i = 0; i < DATACHUNK_NUM; i++)
+        {
+            index.emplace_back(i);
+        }
+        for (size_t i = 0; i < bat_dios.size(); i++)
+        {
+            int val = bat_dios.at(i).dev_id;
+            index.erase(remove(index.begin(), index.end(), val), index.end());
+        }
+        for (size_t i = 0; i < index.size(); i++)
+        {
+            DIO_Info dio(index[i], v_endatabuf[tid].at(index[i]), stripe2devoff(stripeid, 0), SCHUNK_SIZE);
+            re_dios.emplace_back(dio);
+        }
+
+        for (size_t i = 0; i < re_dios.size(); i++)
+        {
+            char *readbuf = re_dios.at(i).buf;
+            uint64_t roffset = re_dios[i].dev_offset;
+            uint64_t rlen = re_dios[i].length;
+            DevFile *destdev = v_stdfiles->at(re_dios[i].dev_id);
+            int fd = destdev->file_fd;
+            iouring_rprep(&stdring[tid], fd, readbuf, roffset, rlen);
+        }
+        rret = io_uring_submit(&stdring[tid]);
+        iouring_wait(&stdring[tid], rret);
+
         ecEncoder *ecencoder = v_ecEncoder[tid];
         ecencoder->do_full_encode(v_endatabuf[tid], v_enparitybuf[tid]);
     }
@@ -237,7 +244,6 @@ bool SEncodeMod::encode_partialstripe(int tid, vector<DIO_Info> v_dios)
         // printf("Encoder: v_endatabuf:%x\n", (int)v_endatabuf[tid].at(thischunk)[0]);
     }
 
-    
     for (size_t pchunk = 0; pchunk < PARITYCHUNK_NUM; pchunk++)
     {
         int ppos = stripe2paritypos(stripeid);
@@ -255,9 +261,8 @@ bool SEncodeMod::encode_partialstripe(int tid, vector<DIO_Info> v_dios)
     }
     uint64_t wwret = io_uring_submit(&stdring[tid]);
 
-    
     vector<char *> temp_ptrs = paritycache->search(pchunk_soff);
-    if (temp_ptrs.size() == PARITYCHUNK_NUM) 
+    if (temp_ptrs.size() == PARITYCHUNK_NUM)
     {
         for (size_t p = 0; p < PARITYCHUNK_NUM; p++)
         {

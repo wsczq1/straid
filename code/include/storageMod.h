@@ -31,21 +31,20 @@ public:
 
     V_DevFiles *v_stdfiles;
 
-    MetaMod *meta_mod; 
+    MetaMod *meta_mod;
 
-    
 public:
     SEncodeMod *s_encodemod;
     SDecodeMod *s_decodemod;
 
 public:
-    V_UserQue v_workinque; 
-    V_BatchQue v_batchque; 
+    V_UserQue v_workinque;
+    V_BatchQue v_batchque;
 
     vector<vector<DIO_Info>> v_batchque2;
     mutex v_batchquelk[NUM_THREADS];
 
-    // thread v_raid_workers[NUM_WORKERS]; 
+    // thread v_raid_workers[NUM_WORKERS];
 
 public:
     StorageMod(V_DevFiles *vstdfiles, MetaMod *metamod)
@@ -59,14 +58,11 @@ public:
 
         assert(num_Devs == NUM_DEVFILES);
 
-        
         // Init_Raid(vstdfiles);
 
-        
         s_encodemod = new SEncodeMod(num_datas, num_paritys, SCHUNK_SIZE, v_stdfiles, meta_mod);
         s_decodemod = new SDecodeMod(num_datas, num_paritys, SCHUNK_SIZE, v_stdfiles, meta_mod);
 
-        
         for (size_t i = 0; i < NUM_WORKERS; i++)
         {
             UserQueue *workerque = new UserQueue(i);

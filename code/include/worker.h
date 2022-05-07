@@ -68,15 +68,15 @@ void *thread_worker(void *worker_info)
     int count = info->count;
     int total_loop = info->loop;
 
-    cpu_set_t mask;                                           // CPU mask
+    cpu_set_t mask;                                   
     cpu_set_t get;                                            
     CPU_ZERO(&mask);                                          
     CPU_SET(thread_id, &mask);                                
-    // if (sched_setaffinity(0, sizeof(cpu_set_t), &mask) == -1) // set CPU affinity
-    // {
-    //     printf("warning: could not set CPU affinity, continuing...\n");
-    //     exit(-1);
-    // }
+    if (sched_setaffinity(0, sizeof(cpu_set_t), &mask) == -1)
+    {
+        printf("warning: could not set CPU affinity, continuing...\n");
+        exit(-1);
+    }
 
     wait_array[thread_id].store(false);
     pos_array[thread_id].store(0);

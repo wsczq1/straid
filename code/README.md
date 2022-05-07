@@ -8,23 +8,24 @@ We recommend deploying at least four dedicated NVMe SSDs for building StRAID in 
 
 Run the script to install dependencies
 ```
- cd code
- sh ./install_depends.sh 
+cd code
+./install_depends.sh 
 ```
 
 or install dependencies as follows
-   ```
-   sudo apt update
-   sudo apt upgrade
-   sudo apt install cmake
-   sudo apt install build-essential
-   sudo apt install autoconf
-   sudo apt install yasm
-   sudo apt install nasm
-   sudo apt install libtool-bin
-   sudo apt install libtbb-dev
-   sudo apt install libcds-dev
-   ```
+```
+sudo apt update
+sudo apt upgrade
+sudo apt install cmake
+sudo apt install build-essential
+sudo apt install autoconf
+sudo apt install yasm
+sudo apt install nasm
+sudo apt install libtool-bin
+sudo apt install libtbb-dev
+sudo apt install libcds-dev
+sudo apt install dstat
+```
 
 ### Intel isa-l
 https://github.com/intel/isa-l
@@ -49,12 +50,12 @@ https://github.com/axboe/liburing
 ### libcuckoo
 https://github.com/efficient/libcuckoo
    ```
-    cd include/libcuckoo
-    mkdir build
-    cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_EXAMPLES=1 -DBUILD_TESTS=1 ..
-    make all
-    make install
+   cd include/libcuckoo
+   mkdir build
+   cd build
+   cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_EXAMPLES=1 -DBUILD_TESTS=1 ..
+   make all
+   make install
    ```
 
 
@@ -128,6 +129,13 @@ Please note that StRAID is currently a prototype and may crash unexpectedly. If 
    ```
    ./run_bench.sh
    ```
+
+   Use the `dstat` tool to monitor disk I/O
+   ```
+   dstat -d -D "directories of SSD devices"
+   # dstat -d -D /dev/nvme0n1,/dev/nvme1n1
+   ```
+
 4. The throughput and latency results are shown in:
 
    ```

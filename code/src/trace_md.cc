@@ -203,6 +203,7 @@ int main(int argc, char *argv[])
         All_Write_Data.store(0);
         All_Read_Data.store(0);
         TTest_Item this_citem;
+        uint64_t asize = SSTRIPE_DATASIZE;
 
         printf("Run Trace %s\n", v_tfileset.at(traces).c_str());
         vector<bool> trace_iodir;
@@ -220,11 +221,10 @@ int main(int argc, char *argv[])
             str_split(line, lineSplit, "\t");
             uint64_t offset = atoll(lineSplit[1].c_str());
             uint64_t length = atoll(lineSplit[2].c_str());
-            offset = o_align(offset, SCHUNK_SIZE);
-            if (lineSplit[0] == "W" && length > SSTRIPE_DATASIZE)
+            ol_align(length, offset, BLK_SIZE);
+            if (lineSplit[0] == "W" && length > asize)
             {
-                offset = o_align(offset, SSTRIPE_DATASIZE);
-                length = l_align(length, SSTRIPE_DATASIZE);
+                ol_align(length, offset, asize);
             }
 
             if (length > 100 * MB)

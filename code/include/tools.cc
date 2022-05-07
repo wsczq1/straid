@@ -289,4 +289,10 @@ uint64_t l_align(uint64_t length, uint64_t align)
     return ((length / align) + 1) * align;
 }
 
+void ol_align(uint64_t &length, uint64_t &offset, uint64_t align)
+{
+    offset = offset - (offset % align);
+    length = ((length / align) + 1) * align;
+}
+
 #endif

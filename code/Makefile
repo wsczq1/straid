@@ -106,6 +106,7 @@ $(eval $(foreach i,$(TARGET),$(call cmd_t,$i)))
 
 .mkdir:
 	@if [ ! -d $(OBJ_DIR) ]; then mkdir -p $(OBJ_DIR); fi
+	@if [ ! -d $(BIN_DIR) ]; then mkdir -p $(BIN_DIR); fi
 
 clean:
 	rm -f $(prefix_objdir)*.o $(prefix_objdir)*.d $(patsubst %,$(BIN_DIR)/%,$(TARGET))

@@ -26,6 +26,11 @@ sudo apt install libtbb-dev
 sudo apt install libcds-dev
 sudo apt install dstat
 ```
+### Install submodules
+In the sections of motivation and evaluation in our paper, we used some tools for analysis and comparison, so we introduced them as submodules. To execute these parts of the code, please install the submodules.
+```
+git submodule update --init --recursive
+```
 
 ### Intel isa-l
 https://github.com/intel/isa-l

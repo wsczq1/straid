@@ -1,0 +1,9 @@
+[submodule "code/include/isa-l"]
+	path = code/include/isa-l
+	url = https://github.com/intel/isa-l
+[submodule "code/include/libcuckoo"]
+	path = code/include/libcuckoo
+	url = https://github.com/efficient/libcuckoo
+[submodule "code/include/liburing"]
+	path = code/include/liburing
+	url = https://github.com/axboe/liburing

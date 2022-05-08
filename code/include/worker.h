@@ -92,6 +92,7 @@ void *thread_worker(void *worker_info)
     {
         for (int loop = 0; loop < total_loop; loop++)
         {
+            SeqW_Offset.store(0);
             uint64_t last_buf_start = 0;
             for (int i = 0; i < count; i++)
             {

@@ -35,7 +35,7 @@ using namespace std;
 #define IO_SIZE (FULLSIZE)
 
 #define STRA_SPACE_LEN (50 * GB) // RAID Space footprint in a SSD
-#define SCHUNK_SIZE (8 * KB)
+#define SCHUNK_SIZE (64 * KB)
 #define SSTRIPE_SIZE (SCHUNK_SIZE * NUM_DEVFILES)
 #define SSTRIPE_DATASIZE (SCHUNK_SIZE * DATACHUNK_NUM)
 #define IDLE_QUELEN (4)

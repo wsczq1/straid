@@ -68,10 +68,10 @@ void *thread_worker(void *worker_info)
     int count = info->count;
     int total_loop = info->loop;
 
-    cpu_set_t mask;                                   
-    cpu_set_t get;                                            
-    CPU_ZERO(&mask);                                          
-    CPU_SET(thread_id, &mask);                                
+    cpu_set_t mask;
+    cpu_set_t get;
+    CPU_ZERO(&mask);
+    CPU_SET(thread_id, &mask);
     if (sched_setaffinity(0, sizeof(cpu_set_t), &mask) == -1)
     {
         printf("warning: could not set CPU affinity, continuing...\n");
@@ -92,7 +92,8 @@ void *thread_worker(void *worker_info)
     {
         for (int loop = 0; loop < total_loop; loop++)
         {
-            SeqW_Offset.store(0);
+            if (SeqW_Offset.load() * iosize > DATASET_SIZE)
+                SeqW_Offset.store(0);
             uint64_t last_buf_start = 0;
             for (int i = 0; i < count; i++)
             {
